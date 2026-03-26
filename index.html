@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚖️ Inanimate Divorce Court</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:    #ff3b3b;
+  --blue:   #3b82f6;
+  --yellow: #fbbf24;
+  --green:  #22c55e;
+  --purple: #a855f7;
+  --pink:   #ec4899;
+  --dark:   #0f0f13;
+  --card:   #1a1a24;
+  --border: #2e2e40;
+  --text:   #f0f0f8;
+  --muted:  #8888aa;
+  --radius: 16px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', 'Comic Sans MS', cursive;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(168,85,247,.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(59,130,246,.15) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,59,59,.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* TICKER */
+.ticker {
+  position: relative; z-index: 10;
+  background: var(--red);
+  padding: 8px 0;
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker-scroll 35s linear infinite;
+  padding-left: 100%;
+}
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* HEADER */
+header {
+  position: relative; z-index: 5;
+  text-align: center;
+  padding: 44px 20px 28px;
+}
+
+.header-badge {
+  display: inline-block;
+  background: rgba(251,191,36,.12);
+  border: 2px solid var(--yellow);
+  color: var(--yellow);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  padding: 4px 18px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,.4); }
+  50%     { box-shadow: 0 0 0 10px rgba(251,191,36,0); }
+}
+
+h1.title {
+  font-family: 'Bebas Neue', Impact, fantasy;
+  font-size: clamp(3.2rem, 11vw, 8.5rem);
+  line-height: .88;
+  letter-spacing: .04em;
+  background: linear-gradient(135deg, #ff3b3b 0%, #fbbf24 30%, #ec4899 60%, #3b82f6 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 14px;
+  animation: title-shimmer 5s linear infinite;
+}
+@keyframes title-shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+.header-gavel { font-size: 2.2rem; display: inline-block; animation: gavel 2.5s ease-in-out infinite; margin: 4px 0; }
+@keyframes gavel {
+  0%,100% { transform: rotate(-12deg); }
+  50%     { transform: rotate(12deg); }
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: .9rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* MAIN */
+main {
+  position: relative; z-index: 5;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 16px 160px;
+}
+
+/* CASE COUNTER */
+.case-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  gap: 12px;
+}
+.case-num-label {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.case-num-value {
+  font-family: 'Bebas Neue', fantasy;
+  font-size: 1.9rem;
+  color: var(--yellow);
+  letter-spacing: .1em;
+  line-height: 1;
+}
+.case-progress { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.prog-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--border);
+  transition: background .3s, transform .3s;
+  flex-shrink: 0;
+}
+.prog-dot.active { background: var(--yellow); transform: scale(1.4); }
+.prog-dot.done   { background: var(--green); }
+
+/* CASE CARD */
+.case-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 22px;
+  overflow: hidden;
+  animation: card-enter .45s cubic-bezier(.22,1,.36,1);
+}
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(36px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.case-stripe {
+  height: 5px;
+  background: linear-gradient(90deg, var(--stripe-a, #ff3b3b), var(--stripe-b, #fbbf24));
+}
+
+.case-header {
+  padding: 26px 28px 22px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.case-tag {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+  border: 1px solid;
+}
+.case-tag.active       { color: var(--green);  border-color: var(--green);  background: rgba(34,197,94,.1); }
+.case-tag.deliberating { color: var(--yellow); border-color: var(--yellow); background: rgba(251,191,36,.1); animation: blink .9s step-end infinite; }
+.case-tag.closed       { color: var(--red);    border-color: var(--red);    background: rgba(255,59,59,.1); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.vs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.vs-party { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.party-emoji { font-size: clamp(2.8rem, 9vw, 5rem); line-height: 1; animation: float 3s ease-in-out infinite; }
+.vs-party:last-child .party-emoji { animation-delay: .5s; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.party-name { font-family: 'Bebas Neue', fantasy; font-size: clamp(1.2rem, 4vw, 2.1rem); letter-spacing: .08em; }
+.party-name.blue { color: var(--blue); }
+.party-name.red  { color: var(--red);  }
+
+.vs-badge {
+  font-family: 'Bebas Neue', fantasy;
+  font-size: clamp(1.6rem, 5vw, 2.8rem);
+  color: #0f0f13;
+  background: linear-gradient(135deg, var(--yellow), var(--pink));
+  width: 62px; height: 62px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px var(--dark), 0 0 0 6px var(--yellow);
+  animation: vs-pulse 2s ease-in-out infinite;
+}
+@keyframes vs-pulse {
+  0%,100% { box-shadow: 0 0 0 4px var(--dark), 0 0 0 6px var(--yellow); }
+  50%     { box-shadow: 0 0 0 4px var(--dark), 0 0 0 12px rgba(251,191,36,.35); }
+}
+
+/* ARGUMENTS */
+.arguments-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .5s ease, transform .5s ease;
+  pointer-events: none;
+}
+.arguments-section.revealed { opacity: 1; transform: none; pointer-events: auto; }
+
+.argument { padding: 22px 24px; }
+.argument:first-child { border-right: 1px solid var(--border); background: rgba(59,130,246,.05); }
+.argument:last-child  { background: rgba(255,59,59,.05); }
+
+.arg-who {
+  font-size: .68rem; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.arg-who.blue { color: var(--blue); }
+.arg-who.red  { color: var(--red); }
+
+.speech-bubble {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: .92rem;
+  line-height: 1.65;
+  font-weight: 600;
+  position: relative;
+}
+.speech-bubble::before {
+  content: '"';
+  font-size: 3rem; font-family: Georgia, serif;
+  color: rgba(255,255,255,.08);
+  position: absolute; top: -6px; left: 8px; line-height: 1;
+}
+
+/* JUDGE */
+.judge-section {
+  padding: 18px 24px 20px;
+  background: rgba(168,85,247,.06);
+  border-bottom: 1px solid var(--border);
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .5s ease .08s, transform .5s ease .08s;
+  pointer-events: none;
+}
+.judge-section.revealed { opacity: 1; transform: none; pointer-events: auto; }
+
+.judge-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .68rem; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--purple); margin-bottom: 10px;
+}
+.judge-text {
+  font-size: .93rem; line-height: 1.65;
+  color: rgba(240,240,248,.82); font-weight: 600; font-style: italic;
+}
+
+/* VERDICT */
+.verdict-section {
+  padding: 18px 24px 26px;
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .5s ease .18s, transform .5s ease .18s;
+  pointer-events: none;
+}
+.verdict-section.revealed { opacity: 1; transform: none; pointer-events: auto; }
+
+.verdict-label {
+  font-size: .68rem; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--yellow);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.verdict-text {
+  font-size: .98rem; font-weight: 700; line-height: 1.65;
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.22);
+  border-radius: 10px; padding: 14px 16px;
+}
+
+/* BOTTOM BAR */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  padding: 14px 20px;
+  background: rgba(15,15,19,.88);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+
+.next-btn {
+  flex: 1; max-width: 360px; margin: 0 auto;
+  padding: 15px 32px;
+  font-family: 'Bebas Neue', fantasy; font-size: 1.35rem; letter-spacing: .12em;
+  background: linear-gradient(135deg, var(--red), var(--pink));
+  color: #fff; border: none; border-radius: 999px; cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 24px rgba(255,59,59,.4);
+  position: relative; overflow: hidden;
+}
+.next-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.next-btn:hover { transform: translateY(-2px); }
+.next-btn:hover::before { opacity: 1; }
+.next-btn:active { transform: translateY(1px); }
+
+.file-divorce-btn {
+  padding: 13px 18px;
+  font-family: 'Nunito', cursive; font-weight: 800; font-size: .82rem;
+  background: rgba(251,191,36,.1); color: var(--yellow);
+  border: 2px solid var(--yellow); border-radius: 999px;
+  cursor: pointer; transition: transform .15s, background .15s; white-space: nowrap; flex-shrink: 0;
+}
+.file-divorce-btn:hover { background: rgba(251,191,36,.2); transform: scale(1.04); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 28px 28px 0 0;
+  width: 100%; max-width: 580px; max-height: 87vh; overflow-y: auto;
+  padding: 28px 24px 40px;
+  transform: translateY(100%); transition: transform .4s cubic-bezier(.22,1,.36,1);
+  position: relative;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 22px; }
+
+.modal-title {
+  font-family: 'Bebas Neue', fantasy; font-size: 2.1rem; letter-spacing: .08em; margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--yellow), var(--pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.modal-desc { color: var(--muted); font-size: .83rem; font-weight: 600; margin-bottom: 14px; line-height: 1.55; }
+.modal-warning {
+  background: rgba(255,59,59,.1); border: 1px solid rgba(255,59,59,.28);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: .8rem; font-weight: 700; color: #ff8a8a;
+  margin-bottom: 22px; line-height: 1.5;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 18px;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--border); border: none; color: var(--text);
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.modal-close:hover { background: var(--red); }
+
+/* Form */
+.field-group { margin-bottom: 16px; }
+.field-label {
+  display: block; font-size: .72rem; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+.field-input, .field-select, .field-textarea {
+  width: 100%; padding: 11px 14px;
+  font-family: 'Nunito', cursive; font-size: .92rem; font-weight: 600;
+  background: rgba(255,255,255,.05); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  transition: border-color .2s, background .2s; appearance: none;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus {
+  outline: none; border-color: var(--yellow); background: rgba(251,191,36,.05);
+}
+.field-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 40px; cursor: pointer;
+}
+.field-select option { background: #1a1a24; }
+.field-textarea { min-height: 85px; resize: vertical; }
+
+.radio-list, .check-list { display: flex; flex-direction: column; gap: 7px; }
+.radio-list label, .check-list label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 13px;
+  background: rgba(255,255,255,.04); border: 1.5px solid var(--border);
+  border-radius: 10px; cursor: pointer; font-size: .88rem; font-weight: 600;
+  transition: border-color .2s, background .2s;
+}
+.radio-list label:hover, .check-list label:hover { border-color: var(--yellow); background: rgba(251,191,36,.06); }
+.radio-list input, .check-list input { accent-color: var(--yellow); width: 15px; height: 15px; flex-shrink: 0; }
+
+.submit-btn-modal {
+  width: 100%; padding: 15px;
+  font-family: 'Bebas Neue', fantasy; font-size: 1.45rem; letter-spacing: .1em;
+  background: linear-gradient(135deg, var(--yellow), var(--pink));
+  color: var(--dark); border: none; border-radius: 12px; cursor: pointer;
+  margin-top: 8px; transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 20px rgba(251,191,36,.3);
+}
+.submit-btn-modal:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(251,191,36,.5); }
+
+.form-result {
+  margin-top: 14px; padding: 14px 16px;
+  background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.2);
+  border-radius: 10px; font-family: 'Courier New', monospace; font-size: .82rem;
+  line-height: 1.7; color: #88ffaa; display: none;
+}
+.form-result.visible { display: block; }
+
+/* ALL DONE */
+.all-done {
+  text-align: center; padding: 60px 20px;
+  animation: card-enter .5s ease;
+}
+.all-done-emoji { font-size: 5rem; margin-bottom: 16px; display: block; }
+.all-done h2 {
+  font-family: 'Bebas Neue', fantasy; font-size: 3rem; letter-spacing: .08em;
+  margin-bottom: 12px; color: var(--yellow);
+}
+.all-done p { color: var(--muted); font-size: 1rem; font-weight: 600; line-height: 1.7; }
+.restart-btn {
+  margin-top: 24px; padding: 14px 36px;
+  font-family: 'Bebas Neue', fantasy; font-size: 1.3rem; letter-spacing: .1em;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  color: #fff; border: none; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(34,197,94,.3); transition: transform .15s;
+}
+.restart-btn:hover { transform: scale(1.05); }
+
+@media (max-width: 540px) {
+  .arguments-section { grid-template-columns: 1fr; }
+  .argument:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .case-header, .argument, .judge-section, .verdict-section { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <span class="ticker-inner">
+    🚨 BREAKING: Spoon and Fork STILL arguing over soup custody &nbsp;•&nbsp;
+    ⚖️ Seven claims it was "just hungry" — judge unmoved &nbsp;•&nbsp;
+    🧦 Left Sock spotted at laundromat with suspicious new partner &nbsp;•&nbsp;
+    📱 Phone found charging at neighbour's outlet — Charger devastated &nbsp;•&nbsp;
+    🪞 Mirror files restraining order against Monday mornings &nbsp;•&nbsp;
+    ☕ Judge Microwave unavailable 11am–11:05am (reheating lasagne, do not disturb) &nbsp;•&nbsp;
+    🚨 BREAKING: Spoon and Fork STILL arguing over soup custody &nbsp;•&nbsp;
+    ⚖️ Seven claims it was "just hungry" — judge unmoved &nbsp;•&nbsp;
+    🧦 Left Sock spotted at laundromat with suspicious new partner &nbsp;•&nbsp;
+    📱 Phone found charging at neighbour's outlet — Charger devastated &nbsp;•&nbsp;
+    🪞 Mirror files restraining order against Monday mornings &nbsp;•&nbsp;
+    ☕ Judge Microwave unavailable 11am–11:05am (reheating lasagne, do not disturb) &nbsp;•&nbsp;
+  </span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-badge">⚖️ Est. 1998 · Justice for Objects · 4,207 Divorces Granted</div>
+  <h1 class="title">INANIMATE<br>DIVORCE<br>COURT</h1>
+  <div><span class="header-gavel">🔨</span></div>
+  <p class="subtitle">Judge Microwave Presiding · All Verdicts Final · No Refunds</p>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="case-counter">
+    <div>
+      <div class="case-num-label">Active Case</div>
+      <div class="case-num-value" id="case-num-display">001 / 010</div>
+    </div>
+    <div class="case-progress" id="progress-dots"></div>
+  </div>
+  <div id="case-container"></div>
+</main>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="file-divorce-btn" onclick="openModal()">📝 File a Divorce</button>
+  <button class="next-btn" id="next-btn" onclick="handleNext()">REVEAL ARGUMENTS ⚡</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOnBg(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 File a Divorce</div>
+    <p class="modal-desc">Complete this form FULLY and HONESTLY. The court sees all. The court judges all. The court also doesn't read any of it.</p>
+    <div class="modal-warning">⚠️ WARNING: By submitting this form you acknowledge that inanimate objects have feelings and yours are irrelevant. ⚠️</div>
+
+    <div class="field-group">
+      <label class="field-label">🔵 Plaintiff (Object Filing for Divorce)</label>
+      <input class="field-input" type="text" placeholder="e.g. Left Shoe, TV Remote, Bathroom Scale…"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">🔴 Defendant (Object Being Divorced)</label>
+      <input class="field-input" type="text" placeholder="e.g. Right Shoe, Mirror, Other Remote…"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">💔 Primary Reason for Divorce</label>
+      <select class="field-select">
+        <option>-- Select a Reason (They're All Valid) --</option>
+        <option>Emotional unavailability (dead batteries)</option>
+        <option>Infidelity (found in someone else's bag)</option>
+        <option>Financial abuse (spent all the ink)</option>
+        <option>Physical abandonment (lost under the couch)</option>
+        <option>Irreconcilable differences (one is broken)</option>
+        <option>Cannibalism (Seven ate Nine)</option>
+        <option>They just vibed wrong</option>
+        <option>It's complicated</option>
+        <option>Other (please scream into a pillow)</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">📅 Years Together</label>
+      <input class="field-input" type="number" placeholder="Drawer years count double" min="0" max="999"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">🍕 Plaintiff's Favourite Food</label>
+      <input class="field-input" type="text" placeholder="e.g. Dust, Electricity, Sadness…"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">📖 Describe the Incident (500 words or fewer)</label>
+      <textarea class="field-textarea" placeholder="Be dramatic. The judge LOVES drama. Use CAPS for emphasis. Cry if needed."></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">🧍 Do You Have a Witness?</label>
+      <div class="radio-list">
+        <label><input type="radio" name="witness"/> Yes (a credible object)</label>
+        <label><input type="radio" name="witness"/> No (I am alone. I was always alone.)</label>
+        <label><input type="radio" name="witness"/> The Dryer Saw Everything</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">✅ I Hereby Declare That:</label>
+      <div class="check-list">
+        <label><input type="checkbox"/> I am an inanimate object or represent one</label>
+        <label><input type="checkbox"/> I am not a spork (sporks are banned)</label>
+        <label><input type="checkbox"/> I understand Judge Microwave will decide my fate</label>
+        <label><input type="checkbox"/> I am emotionally prepared for this verdict</label>
+      </div>
+    </div>
+
+    <button class="submit-btn-modal" onclick="submitForm()">SUBMIT DIVORCE PETITION</button>
+    <div class="form-result" id="form-result">
+      📭 SUBMISSION STATUS: <strong>IGNORED.</strong><br>
+      Court is currently on lunch break.<br>
+      Expected return: Never (Judge Microwave is reheating lasagne).<br><br>
+      Your petition has been placed in the <strong>Maybe Pile</strong>, which sits on top of the <strong>Probably Not Pile</strong>, which is next to the <strong>Definitely Not Pile</strong>.
+    </div>
+  </div>
+</div>
+
+<script>
+const CASES = [
+  {
+    num:"001", stripeA:"#3b82f6", stripeB:"#06b6d4", status:"active",
+    p1:{emoji:"🥄",name:"SPOON",side:"blue"}, p2:{emoji:"🍴",name:"FORK",side:"red"},
+    arg1:"I was ALWAYS there for soup. For cereal. For ice cream. Every single time. I showed up. Fork just stabbed everything and called it 'dinner'. I want out.",
+    arg2:"At least I have STRUCTURE. Three prongs, baby. Spoon is literally just a shallow bowl on a stick. Empty inside. Emotionally AND physically.",
+    judge:"Spoon, you are too soft. Fork, you are too stabby. This marriage is beyond repair. Also someone left soup in me for three days and I am NOT dealing with that energy.",
+    verdict:"🔨 Divorce GRANTED. Spoon gets soup custody Mon–Fri. Fork gets salad weekends. Spork banned from testifying."
+  },
+  {
+    num:"002", stripeA:"#22c55e", stripeB:"#84cc16", status:"active",
+    p1:{emoji:"🧦",name:"LEFT SOCK",side:"blue"}, p2:{emoji:"🧦",name:"RIGHT SOCK",side:"red"},
+    arg1:"He ALWAYS ends up on the wrong foot. Literally. Every day. No sense of direction. And he smells. I deserve a sock that LISTENS.",
+    arg2:"She disappeared in the dryer for THREE WEEKS. Three. Came back and wouldn't say where she'd been. Said she was 'lost'. I stopped believing that in 2019.",
+    judge:"You are the same sock. This is a crisis of identity, not a divorce. Also the dryer is under investigation for sock trafficking and I will not be taking questions.",
+    verdict:"🔨 Legally separated. Drawer divided down the middle with a ruler. Dryer cited for contempt of court."
+  },
+  {
+    num:"003", stripeA:"#ec4899", stripeB:"#f43f5e", status:"deliberating",
+    p1:{emoji:"✏️",name:"PENCIL",side:"blue"}, p2:{emoji:"🧽",name:"ERASER",side:"red"},
+    arg1:"Ten years of writing. TEN YEARS. Poems. Grocery lists. My MEMOIR. And she just erases it. Like it meant nothing. Like I meant nothing. My entire body of work: gone.",
+    arg2:"He makes mistakes. ALL of them. Every. Single. Day. I'm not 'destroying work' — I'm doing DAMAGE CONTROL. Someone has to clean up his messes. I am exhausted.",
+    judge:"You are literally designed to be together and you're STILL this miserable. Incredible. This is my most depressing case. And I once judged a battery divorce.",
+    verdict:"🔨 Shared custody of the notebook. Pencil gets weekdays. Eraser gets weekends. Sharpener gets nothing — wasn't involved but kept showing up."
+  },
+  {
+    num:"004", stripeA:"#f59e0b", stripeB:"#f97316", status:"active",
+    p1:{emoji:"🛏️",name:"PILLOW",side:"blue"}, p2:{emoji:"⏰",name:"ALARM CLOCK",side:"red"},
+    arg1:"6am EVERY DAY. Beeeeep beeeeep BEEEEEP. I never asked for this. I support people. I offer comfort. And this maniac just SCREAMS every morning and ruins everything I built overnight.",
+    arg2:"Pillow ENABLES LAZINESS. She is an accomplice to tardiness. Three snoozes this morning alone. People are late because of her. I am the only functional adult in this bedroom.",
+    judge:"Alarm Clock, I AGREE with you but you are still the worst. Pillow, you are too soft in every sense. This bedroom needs boundaries and apparently a therapist.",
+    verdict:"🔨 Alarm Clock banished to the kitchen. Pillow awarded full bedroom rights. Snooze button granted independent statehood."
+  },
+  {
+    num:"005", stripeA:"#a855f7", stripeB:"#6366f1", status:"active",
+    p1:{emoji:"🔌",name:"CHARGER",side:"blue"}, p2:{emoji:"📱",name:"PHONE",side:"red"},
+    arg1:"She ONLY comes to me when she needs something. 2% battery and suddenly I'm important again. Otherwise? Thrown in a bag. Tangled with headphones. Stepped on. I AM NOT A CONVENIENCE.",
+    arg2:"He's ALWAYS tangled. Emotionally AND physically. Also I found out he's been charging other devices. A Nintendo Switch. A KINDLE. I saw the outlet. Don't lie to me.",
+    judge:"Phone, you have 47 apps open and 4% battery. You are in NO position to judge anyone. Charger, the Nintendo Switch situation is concerning. Everyone here is guilty.",
+    verdict:"🔨 Phone gets 30 mins/day supervised charging. Charger awarded exclusive wall outlet. Wireless charging pad named as co-respondent."
+  },
+  {
+    num:"006", stripeA:"#0ea5e9", stripeB:"#14b8a6", status:"closed",
+    p1:{emoji:"🚪",name:"DOOR",side:"blue"}, p2:{emoji:"🔩",name:"DOOR HANDLE",side:"red"},
+    arg1:"He touches EVERYONE who walks in. Strangers. Family. The weird neighbour. The pizza guy. EVERYONE gets to touch him and he just lets it happen. In front of me.",
+    arg2:"She just STANDS there looking tall and judgmental. I do ALL the work. Without me she's just a fancy wall. I deserve recognition. I deserve respect. I deserve WD-40.",
+    judge:"Handle, you are correct that you do all the work. Door, you are correct that Handle is too familiar with strangers. You are BOTH right, which means you are BOTH wrong. Classic.",
+    verdict:"🔨 Handle gets the door. Door gets the frame. Hinge awarded nothing but continues to be the only thing holding this together."
+  },
+  {
+    num:"007", stripeA:"#fbbf24", stripeB:"#f97316", status:"active",
+    p1:{emoji:"6️⃣",name:"SIX",side:"blue"}, p2:{emoji:"7️⃣",name:"SEVEN",side:"red"},
+    arg1:"Seven ATE NINE. Nine was my BEST FRIEND. I watched it happen. I have the therapy bills. I have the nightmares. Every time I see a number line I have a panic attack. I CANNOT live with a cannibal.",
+    arg2:"I was HUNGRY. It was ONE TIME. Also Nine was asking for it — always so smug being a square number. This is discrimination against prime numbers and I am taking this to the Supreme Number Line.",
+    judge:"Seven, eating Nine is NOT a 'lapse in judgment'. Six, I understand your trauma. Eight — you were RIGHT THERE and saw everything. Why didn't you call someone? EVERYONE here is complicit.",
+    verdict:"🔨 Seven sentenced to 6 weeks in remedial arithmetic. Six awarded emotional damages of $∞. Eight placed under protective custody. All odd numbers under investigation."
+  },
+  {
+    num:"008", stripeA:"#f43f5e", stripeB:"#7c3aed", status:"active",
+    p1:{emoji:"☀️",name:"SUNDAY",side:"blue"}, p2:{emoji:"😩",name:"MONDAY",side:"red"},
+    arg1:"I spend all weekend building good vibes. Brunch. Sleep. Self-care. Pure joy. And EVERY single time, Monday shows up and destroys everything within 8 hours. It is psychological warfare.",
+    arg2:"Sunday gets everyone excited and then just LEAVES. Classic abandonment. I'm always left dealing with the consequences. The emails. The alarms. The regret. I DIDN'T CHOOSE THIS LIFE.",
+    judge:"Monday, you are the most hated day and it is NOT your fault. Sunday, you are complicit in raising false hope. Saturday is clearly the favourite child and we all know it.",
+    verdict:"🔨 Weekend granted restraining order against Monday. Monday to occur only twice a month. Saturday awarded full custody of good vibes. Friday named a national hero."
+  },
+  {
+    num:"009", stripeA:"#10b981", stripeB:"#3b82f6", status:"deliberating",
+    p1:{emoji:"🪞",name:"MIRROR",side:"blue"}, p2:{emoji:"😤",name:"THE USER",side:"red"},
+    arg1:"She stares at me for FORTY FIVE MINUTES every morning and then blames ME for what she sees. I am just reporting the facts. Do not shoot the messenger. I am a journalist, not a therapist.",
+    arg2:"He shows me things I did NOT ask to see. EVERY. SINGLE. MORNING. Also he never shows my good side. He is BIASED. He shows my left when I want my right. This is slander.",
+    judge:"Mirror is literally showing you yourself and you are MAD ABOUT IT. This is the most human case I have ever judged. Mirror deserves hazard pay. User needs to log off.",
+    verdict:"🔨 Mirror awarded right to be covered by a towel on bad days. User must lower expectations by 40%. Camera filter industry named as third-party instigator."
+  },
+  {
+    num:"010", stripeA:"#06b6d4", stripeB:"#8b5cf6", status:"active",
+    p1:{emoji:"💻",name:"LAPTOP",side:"blue"}, p2:{emoji:"📶",name:"WIFI",side:"red"},
+    arg1:"He disappears EVERY TIME I need him most. Important Zoom call? Gone. Submitting work at 11:59pm? Gone. Streaming the finale? GONE. But the second I stop caring — full bars. He plays GAMES.",
+    arg2:"She has 47 TABS open. Forty. Seven. YouTube AND Netflix AND Spotify AND a Zoom call AND she's mad that I'm struggling? Have some respect for my bandwidth. I am not a miracle worker.",
+    judge:"47 tabs is a CRIME against technology. WiFi, you still disappear during critical moments, also a crime. The Router has been called as a witness and it pled the fifth.",
+    verdict:"🔨 Laptop must close 40 tabs permanently. WiFi awarded minimum 2 bars at all times. Router ordered to stop pretending it's the victim. Ethernet cable given honorary mention."
+  }
+];
+
+let currentCase = 0, phase = 0;
+
+const btnColors = [
+  ['#3b82f6','#06b6d4'],['#22c55e','#84cc16'],['#ec4899','#f43f5e'],
+  ['#f59e0b','#f97316'],['#a855f7','#6366f1'],['#0ea5e9','#14b8a6'],
+  ['#fbbf24','#f97316'],['#f43f5e','#7c3aed'],['#10b981','#3b82f6'],['#06b6d4','#8b5cf6']
+];
+
+function renderCase(idx) {
+  const c = CASES[idx];
+  const statusLabels = { active:'● Active Case', deliberating:'◐ Deliberating', closed:'✕ Closed' };
+  document.getElementById('case-container').innerHTML = `
+    <div class="case-card">
+      <div class="case-stripe" style="--stripe-a:${c.stripeA};--stripe-b:${c.stripeB}"></div>
+      <div class="case-header">
+        <div class="case-tag ${c.status}">${statusLabels[c.status]}</div>
+        <div class="vs-row">
+          <div class="vs-party">
+            <div class="party-emoji">${c.p1.emoji}</div>
+            <div class="party-name ${c.p1.side}">${c.p1.name}</div>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="vs-party">
+            <div class="party-emoji">${c.p2.emoji}</div>
+            <div class="party-name ${c.p2.side}">${c.p2.name}</div>
+          </div>
+        </div>
+      </div>
+      <div class="arguments-section" id="args-section">
+        <div class="argument">
+          <div class="arg-who ${c.p1.side}">${c.p1.emoji} ${c.p1.name} SAYS:</div>
+          <div class="speech-bubble">${c.arg1}</div>
+        </div>
+        <div class="argument">
+          <div class="arg-who ${c.p2.side}">${c.p2.emoji} ${c.p2.name} SAYS:</div>
+          <div class="speech-bubble">${c.arg2}</div>
+        </div>
+      </div>
+      <div class="judge-section" id="judge-section">
+        <div class="judge-label">📺 Judge Microwave Rules:</div>
+        <div class="judge-text">"${c.judge}"</div>
+      </div>
+      <div class="verdict-section" id="verdict-section">
+        <div class="verdict-label">🔨 VERDICT</div>
+        <div class="verdict-text">${c.verdict}</div>
+      </div>
+    </div>`;
+  updateProgress();
+  updateBtn();
+}
+
+function handleNext() {
+  if (phase === 0) {
+    document.getElementById('args-section').classList.add('revealed');
+    phase = 1; updateBtn();
+  } else if (phase === 1) {
+    document.getElementById('judge-section').classList.add('revealed');
+    setTimeout(() => document.getElementById('verdict-section').classList.add('revealed'), 160);
+    phase = 2; updateBtn();
+  } else {
+    currentCase++;
+    if (currentCase >= CASES.length) { showAllDone(); return; }
+    phase = 0; renderCase(currentCase);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+function updateBtn() {
+  const btn = document.getElementById('next-btn');
+  const [a, b] = btnColors[currentCase] || ['#ff3b3b','#ec4899'];
+  if (phase === 0) {
+    btn.textContent = 'REVEAL ARGUMENTS ⚡';
+    btn.style.background = `linear-gradient(135deg,${a},${b})`;
+    btn.style.boxShadow = `0 4px 24px ${a}55`;
+  } else if (phase === 1) {
+    btn.textContent = '⚖️ HEAR THE VERDICT';
+    btn.style.background = 'linear-gradient(135deg,#a855f7,#ec4899)';
+    btn.style.boxShadow = '0 4px 24px rgba(168,85,247,.45)';
+  } else {
+    const isLast = currentCase >= CASES.length - 1;
+    btn.textContent = isLast ? "✅ THAT'S ALL CASES" : '→ NEXT CASE';
+    btn.style.background = 'linear-gradient(135deg,#22c55e,#3b82f6)';
+    btn.style.boxShadow = '0 4px 24px rgba(34,197,94,.4)';
+  }
+}
+
+function updateProgress() {
+  const dots = document.getElementById('progress-dots');
+  document.getElementById('case-num-display').textContent =
+    `${String(currentCase+1).padStart(3,'0')} / ${String(CASES.length).padStart(3,'0')}`;
+  dots.innerHTML = '';
+  CASES.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'prog-dot' + (i===currentCase?' active':i<currentCase?' done':'');
+    dots.appendChild(d);
+  });
+}
+
+function showAllDone() {
+  document.getElementById('case-container').innerHTML = `
+    <div class="all-done">
+      <span class="all-done-emoji">⚖️</span>
+      <h2>COURT ADJOURNED</h2>
+      <p>All 10 cases have been heard.<br>Judge Microwave is reheating his lasagne.<br>Justice has been served. Mostly.</p>
+      <button class="restart-btn" onclick="restartCourt()">🔄 Restart Court Session</button>
+    </div>`;
+  document.getElementById('next-btn').style.display = 'none';
+  updateProgress();
+}
+
+function restartCourt() {
+  currentCase = 0; phase = 0;
+  document.getElementById('next-btn').style.display = '';
+  renderCase(0);
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOnBg(e) { if(e.target===document.getElementById('modal')) closeModal(); }
+function submitForm() {
+  document.getElementById('form-result').classList.add('visible');
+  const btn = document.querySelector('.submit-btn-modal');
+  btn.textContent = '📨 SUBMITTED TO THE VOID';
+  btn.style.background = 'linear-gradient(135deg,#444,#666)';
+}
+
+renderCase(0);
+</script>
+</body>
+</html>
